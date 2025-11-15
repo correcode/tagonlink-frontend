@@ -3,14 +3,44 @@ import authService from './auth.js'
 import router from './router.js'
 import themeManager from './theme.js'
 
-// Configuração da API
-const API =
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000/api'
-    : 'https://tagonlink-backend.vercel.app/api'
+// Configuração da API - detecta automaticamente o ambiente
+function getAPIUrl() {
+  const hostname = window.location.hostname
 
+  // Desenvolvimento local
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3000/api'
+  }
+
+  // Produção - usar a URL do backend no Vercel
+  // IMPORTANTE: Substitua pela URL real do seu backend no Vercel
+  const backendUrl = 'https://tagonlink-backend.vercel.app/api'
+
+  // Verificar se o backend está acessível
+  return backendUrl
+}
+
+const API = getAPIUrl()
 window.API = API
+
+// Testar conexão com backend ao carregar
+async function testBackendConnection() {
+  try {
+    const baseUrl = API.replace('/api', '')
+    const res = await fetch(`${baseUrl}/api/health`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!res.ok) {
+      console.warn('Backend pode não estar acessível')
+    }
+  } catch (error) {
+    console.warn('Não foi possível conectar ao backend:', error)
+  }
+}
+
+// Testar conexão após um pequeno delay
+setTimeout(testBackendConnection, 1000)
 
 // ========== PÁGINAS ==========
 
@@ -199,7 +229,12 @@ function showDashboard() {
 async function handleLogin(e) {
   e.preventDefault()
   const errorDiv = document.getElementById('authError')
+  const submitBtn = e.target.querySelector('button[type="submit"]')
   errorDiv.textContent = ''
+
+  const originalText = submitBtn.textContent
+  submitBtn.disabled = true
+  submitBtn.textContent = 'Entrando...'
 
   const email = document.getElementById('loginEmail').value
   const password = document.getElementById('loginPassword').value
@@ -211,23 +246,39 @@ async function handleLogin(e) {
       body: JSON.stringify({ email, password }),
     })
 
-    const data = await res.json()
+    let data
+    try {
+      data = await res.json()
+    } catch (e) {
+      throw new Error('Resposta inválida do servidor')
+    }
 
     if (res.ok) {
       authService.setAuth(data.token, data.user)
       router.navigate('/dashboard')
     } else {
       errorDiv.textContent = data.error || 'Erro ao fazer login'
+      submitBtn.disabled = false
+      submitBtn.textContent = originalText
     }
   } catch (error) {
-    errorDiv.textContent = 'Erro de conexão. Tente novamente.'
+    console.error('Erro de login:', error)
+    errorDiv.textContent =
+      'Erro de conexão. Verifique se o backend está rodando e tente novamente.'
+    submitBtn.disabled = false
+    submitBtn.textContent = originalText
   }
 }
 
 async function handleRegister(e) {
   e.preventDefault()
   const errorDiv = document.getElementById('authError')
+  const submitBtn = e.target.querySelector('button[type="submit"]')
   errorDiv.textContent = ''
+
+  const originalText = submitBtn.textContent
+  submitBtn.disabled = true
+  submitBtn.textContent = 'Criando conta...'
 
   const name = document.getElementById('registerName').value
   const email = document.getElementById('registerEmail').value
@@ -240,16 +291,27 @@ async function handleRegister(e) {
       body: JSON.stringify({ name, email, password }),
     })
 
-    const data = await res.json()
+    let data
+    try {
+      data = await res.json()
+    } catch (e) {
+      throw new Error('Resposta inválida do servidor')
+    }
 
     if (res.ok) {
       authService.setAuth(data.token, data.user)
       router.navigate('/dashboard')
     } else {
       errorDiv.textContent = data.error || 'Erro ao criar conta'
+      submitBtn.disabled = false
+      submitBtn.textContent = originalText
     }
   } catch (error) {
-    errorDiv.textContent = 'Erro de conexão. Tente novamente.'
+    console.error('Erro de registro:', error)
+    errorDiv.textContent =
+      'Erro de conexão. Verifique se o backend está rodando e tente novamente.'
+    submitBtn.disabled = false
+    submitBtn.textContent = originalText
   }
 }
 
