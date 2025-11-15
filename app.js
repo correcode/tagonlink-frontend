@@ -8,35 +8,22 @@ function getAPIUrl() {
   const port = window.location.port
 
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return `${protocol}//${hostname}:${port || '3000'}/api`
+    const apiPort = port || '3000'
+    return `${protocol}//${hostname}:${apiPort}/api`
   }
 
-  const currentOrigin = window.location.origin
-  const backendSubdomain = currentOrigin.replace(
-    /^https?:\/\/([^.]+)/,
-    (match, subdomain) => {
-      if (subdomain.includes('frontend') || subdomain.includes('app')) {
-        return subdomain.replace(/frontend|app/, 'backend')
-      }
-      return 'backend'
-    }
-  )
-
-  if (backendSubdomain !== currentOrigin) {
-    return `${backendSubdomain}/api`
+  const metaTag = document.querySelector('meta[name="api-url"]')
+  if (metaTag && metaTag.content) {
+    return metaTag.content
   }
 
-  const parts = hostname.split('.')
-  if (parts.length >= 2) {
-    parts[0] = 'backend'
-    return `${protocol}//${parts.join('.')}/api`
-  }
-
-  return `${currentOrigin.replace(/\/$/, '')}/api`
+  return 'https://tagonlink-backend.vercel.app/api'
 }
 
 const API = getAPIUrl()
 window.API = API
+
+console.log('API URL configurada:', API)
 
 function showLoginPage() {
   document.body.innerHTML = `
@@ -231,6 +218,7 @@ async function handleLogin(e) {
   const password = document.getElementById('loginPassword').value
 
   try {
+    console.log('Tentando fazer login em:', `${API}/auth/login`)
     const res = await fetch(`${API}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -241,21 +229,27 @@ async function handleLogin(e) {
     try {
       data = await res.json()
     } catch (e) {
-      throw new Error('Resposta inválida do servidor')
+      console.error('Erro ao parsear resposta:', e)
+      throw new Error(`Resposta inválida do servidor. Status: ${res.status}`)
     }
 
     if (res.ok) {
       authService.setAuth(data.token, data.user)
       router.navigate('/dashboard')
     } else {
-      errorDiv.textContent = data.error || 'Erro ao fazer login'
+      const errorMsg = data.error || `Erro ${res.status}: ${res.statusText}`
+      console.error('Erro no login:', errorMsg, data)
+      errorDiv.textContent = errorMsg
       submitBtn.disabled = false
       submitBtn.textContent = originalText
     }
   } catch (error) {
-    console.error('Erro de login:', error)
-    errorDiv.textContent =
-      'Erro de conexão. Verifique se o backend está rodando e tente novamente.'
+    console.error('Erro de conexão no login:', error)
+    console.error('URL da API:', API)
+    errorDiv.textContent = `Erro de conexão: ${
+      error.message ||
+      'Não foi possível conectar ao servidor. Verifique se o backend está rodando.'
+    }`
     submitBtn.disabled = false
     submitBtn.textContent = originalText
   }
@@ -276,6 +270,7 @@ async function handleRegister(e) {
   const password = document.getElementById('registerPassword').value
 
   try {
+    console.log('Tentando registrar em:', `${API}/auth/register`)
     const res = await fetch(`${API}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -286,21 +281,27 @@ async function handleRegister(e) {
     try {
       data = await res.json()
     } catch (e) {
-      throw new Error('Resposta inválida do servidor')
+      console.error('Erro ao parsear resposta:', e)
+      throw new Error(`Resposta inválida do servidor. Status: ${res.status}`)
     }
 
     if (res.ok) {
       authService.setAuth(data.token, data.user)
       router.navigate('/dashboard')
     } else {
-      errorDiv.textContent = data.error || 'Erro ao criar conta'
+      const errorMsg = data.error || `Erro ${res.status}: ${res.statusText}`
+      console.error('Erro no registro:', errorMsg, data)
+      errorDiv.textContent = errorMsg
       submitBtn.disabled = false
       submitBtn.textContent = originalText
     }
   } catch (error) {
-    console.error('Erro de registro:', error)
-    errorDiv.textContent =
-      'Erro de conexão. Verifique se o backend está rodando e tente novamente.'
+    console.error('Erro de conexão no registro:', error)
+    console.error('URL da API:', API)
+    errorDiv.textContent = `Erro de conexão: ${
+      error.message ||
+      'Não foi possível conectar ao servidor. Verifique se o backend está rodando.'
+    }`
     submitBtn.disabled = false
     submitBtn.textContent = originalText
   }
@@ -488,6 +489,8 @@ async function handleSubmitLink(e) {
   const endpoint = id ? `${API}/links/${id}` : `${API}/links`
 
   try {
+    console.log('Salvando link em:', endpoint)
+    console.log('Dados:', data)
     const res = await fetch(endpoint, {
       method,
       headers: {
@@ -500,19 +503,24 @@ async function handleSubmitLink(e) {
     const responseData = await res.json().catch(() => ({}))
 
     if (res.ok) {
+      console.log('Link salvo com sucesso:', responseData)
       resetForm()
       fetchLinks()
     } else {
       const errorMsg =
         responseData.error || `Erro ${res.status}: ${res.statusText}`
       console.error('Erro ao salvar link:', errorMsg, responseData)
+      console.error('Status:', res.status)
       alert(`Erro ao salvar link: ${errorMsg}`)
     }
   } catch (error) {
-    console.error('Erro de conexão:', error)
+    console.error('Erro de conexão ao salvar link:', error)
+    console.error('URL da API:', API)
+    console.error('Endpoint:', endpoint)
     alert(
       `Erro de conexão: ${
-        error.message || 'Não foi possível conectar ao servidor'
+        error.message ||
+        'Não foi possível conectar ao servidor. Verifique se o backend está rodando.'
       }`
     )
   }
