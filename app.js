@@ -216,7 +216,6 @@ async function handleLogin(e) {
   const password = document.getElementById('loginPassword').value
 
   try {
-    console.log('Tentando fazer login em:', `${API}/auth/login`)
     const res = await fetch(`${API}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -243,7 +242,6 @@ async function handleLogin(e) {
     }
   } catch (error) {
     console.error('Erro de conexão no login:', error)
-    console.error('URL da API:', API)
     errorDiv.textContent = `Erro de conexão: ${
       error.message ||
       'Não foi possível conectar ao servidor. Verifique se o backend está rodando.'
@@ -295,7 +293,6 @@ async function handleRegister(e) {
     }
   } catch (error) {
     console.error('Erro de conexão no registro:', error)
-    console.error('URL da API:', API)
     errorDiv.textContent = `Erro de conexão: ${
       error.message ||
       'Não foi possível conectar ao servidor. Verifique se o backend está rodando.'
