@@ -3,43 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TagOnLink</title>
+    <title>TagOnLink - Organize seus links</title>
     <link rel="icon" type="image/png" href="img/TagOnLink.png" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="container">
-      <h1 id="logo">
-        <img
-          src="img/TagOnLink.png"
-          alt="Logo"
-          width="150"
-          style="vertical-align: center"
-        />
-      </h1>
-
-      <form id="linkForm">
-        <input type="hidden" id="linkId" />
-        <label>Título <input id="title" required /></label>
-        <label
-          >URL
-          <input id="url" required placeholder="https://www.tagonlink.com.br"
-        /></label>
-        <label>Descrição <textarea id="description"></textarea></label>
-        <label
-          >Tags <input id="tags" placeholder="ex: estudo, trabalho"
-        /></label>
-        <div class="actions">
-          <button type="submit">Salvar</button>
-          <button type="button" id="resetBtn">Cancelar</button>
-        </div>
-      </form>
-
-      <section>
-        <h2>Links Salvos</h2>
-        <ul id="linkList"></ul>
-      </section>
-    </main>
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>
