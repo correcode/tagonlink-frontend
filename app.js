@@ -23,8 +23,6 @@ function getAPIUrl() {
 const API = getAPIUrl()
 window.API = API
 
-console.log('API URL configurada:', API)
-
 function showLoginPage() {
   document.body.innerHTML = `
     <div class="auth-container">
