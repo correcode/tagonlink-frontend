@@ -1,6 +1,4 @@
-/* ========== VARIÁVEIS CSS ========== */
 :root {
-  /* Cores - Tema Escuro (padrão) */
   --bg-primary: #0f0f23;
   --bg-secondary: #1a1a2e;
   --bg-tertiary: #16213e;
@@ -40,7 +38,6 @@
   --shadow-lg: rgba(0, 0, 0, 0.15);
 }
 
-/* ========== RESET E BASE ========== */
 * {
   margin: 0;
   padding: 0;
@@ -57,7 +54,6 @@ body {
   min-height: 100vh;
 }
 
-/* ========== AUTH PAGES ========== */
 .auth-container {
   min-height: 100vh;
   display: flex;
@@ -193,7 +189,6 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* ========== APP LAYOUT ========== */
 .app-container {
   min-height: 100vh;
   display: flex;
@@ -264,7 +259,6 @@ body {
   padding: 0 1.5rem;
 }
 
-/* ========== BUTTONS ========== */
 .btn {
   padding: 0.75rem 1.5rem;
   border: none;
@@ -324,7 +318,6 @@ body {
   color: var(--error);
 }
 
-/* ========== LINK FORM ========== */
 .link-form-section {
   background: var(--bg-card);
   border-radius: 12px;
@@ -358,7 +351,6 @@ body {
   margin-top: 0.5rem;
 }
 
-/* ========== LINKS SECTION ========== */
 .links-section {
   margin-top: 2rem;
 }
@@ -531,7 +523,6 @@ body {
   margin-bottom: 0.5rem;
 }
 
-/* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
   .auth-card {
     padding: 2rem 1.5rem;
@@ -596,7 +587,6 @@ body {
   }
 }
 
-/* ========== ANIMAÇÕES ========== */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -610,7 +600,6 @@ body {
   animation: fadeIn 0.3s ease;
 }
 
-/* ========== SCROLLBAR ========== */
 ::-webkit-scrollbar {
   width: 10px;
 }

@@ -1,4 +1,3 @@
-// Gerenciamento de autenticação
 class AuthService {
   constructor() {
     this.tokenKey = 'tagonlink_token'
@@ -33,7 +32,9 @@ class AuthService {
     if (!token) return false
 
     try {
-      const API = window.API || 'https://tagonlink-backend.vercel.app/api'
+      const API = window.API
+      if (!API) return false
+
       const res = await fetch(`${API}/auth/verify`, {
         headers: { Authorization: `Bearer ${token}` },
       })

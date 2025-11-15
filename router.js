@@ -1,4 +1,3 @@
-// Sistema de rotas simples
 class Router {
   constructor() {
     this.routes = {}
@@ -18,7 +17,6 @@ class Router {
   }
 
   init() {
-    // Navegação inicial
     const path = window.location.pathname || '/'
     if (this.routes[path]) {
       this.routes[path]()
@@ -26,7 +24,6 @@ class Router {
       this.routes['/']()
     }
 
-    // Interceptar cliques em links
     document.addEventListener('click', (e) => {
       if (e.target.matches('[data-route]')) {
         e.preventDefault()
@@ -35,7 +32,6 @@ class Router {
       }
     })
 
-    // Interceptar navegação do browser
     window.addEventListener('popstate', () => {
       const path = window.location.pathname || '/'
       if (this.routes[path]) {
@@ -47,4 +43,3 @@ class Router {
 
 const router = new Router()
 export default router
-

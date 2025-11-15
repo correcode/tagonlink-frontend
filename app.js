@@ -1,48 +1,42 @@
-// Importar dependências (usando import dinâmico para compatibilidade)
 import authService from './auth.js'
 import router from './router.js'
 import themeManager from './theme.js'
 
-// Configuração da API - detecta automaticamente o ambiente
 function getAPIUrl() {
   const hostname = window.location.hostname
+  const protocol = window.location.protocol
+  const port = window.location.port
 
-  // Desenvolvimento local
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:3000/api'
+    return `${protocol}//${hostname}:${port || '3000'}/api`
   }
 
-  // Produção - usar a URL do backend no Vercel
-  // IMPORTANTE: Substitua pela URL real do seu backend no Vercel
-  const backendUrl = 'https://tagonlink-backend.vercel.app/api'
+  const currentOrigin = window.location.origin
+  const backendSubdomain = currentOrigin.replace(
+    /^https?:\/\/([^.]+)/,
+    (match, subdomain) => {
+      if (subdomain.includes('frontend') || subdomain.includes('app')) {
+        return subdomain.replace(/frontend|app/, 'backend')
+      }
+      return 'backend'
+    }
+  )
 
-  // Verificar se o backend está acessível
-  return backendUrl
+  if (backendSubdomain !== currentOrigin) {
+    return `${backendSubdomain}/api`
+  }
+
+  const parts = hostname.split('.')
+  if (parts.length >= 2) {
+    parts[0] = 'backend'
+    return `${protocol}//${parts.join('.')}/api`
+  }
+
+  return `${currentOrigin.replace(/\/$/, '')}/api`
 }
 
 const API = getAPIUrl()
 window.API = API
-
-// Testar conexão com backend ao carregar
-async function testBackendConnection() {
-  try {
-    const baseUrl = API.replace('/api', '')
-    const res = await fetch(`${baseUrl}/api/health`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    if (!res.ok) {
-      console.warn('Backend pode não estar acessível')
-    }
-  } catch (error) {
-    console.warn('Não foi possível conectar ao backend:', error)
-  }
-}
-
-// Testar conexão após um pequeno delay
-setTimeout(testBackendConnection, 1000)
-
-// ========== PÁGINAS ==========
 
 function showLoginPage() {
   document.body.innerHTML = `
@@ -209,7 +203,6 @@ function showDashboard() {
     </div>
   `
 
-  // Event listeners
   document
     .getElementById('themeToggle')
     .addEventListener('click', () => themeManager.toggle())
@@ -223,8 +216,6 @@ function showDashboard() {
   themeManager.init()
   fetchLinks()
 }
-
-// ========== HANDLERS ==========
 
 async function handleLogin(e) {
   e.preventDefault()
@@ -355,6 +346,12 @@ let allLinks = []
 async function fetchLinks() {
   try {
     const token = authService.getToken()
+
+    if (!token) {
+      console.warn('Token não encontrado')
+      return
+    }
+
     const res = await fetch(`${API}/links`, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -365,6 +362,9 @@ async function fetchLinks() {
     } else if (res.status === 401) {
       authService.clearAuth()
       router.navigate('/')
+    } else {
+      const errorData = await res.json().catch(() => ({}))
+      console.error('Erro ao buscar links:', res.status, errorData)
     }
   } catch (error) {
     console.error('Erro ao buscar links:', error)
@@ -469,6 +469,13 @@ function handleSearch(e) {
 async function handleSubmitLink(e) {
   e.preventDefault()
   const token = authService.getToken()
+
+  if (!token) {
+    alert('Você precisa estar logado para salvar links')
+    router.navigate('/')
+    return
+  }
+
   const id = document.getElementById('linkId').value
   const data = {
     title: document.getElementById('title').value,
@@ -490,14 +497,24 @@ async function handleSubmitLink(e) {
       body: JSON.stringify(data),
     })
 
+    const responseData = await res.json().catch(() => ({}))
+
     if (res.ok) {
       resetForm()
       fetchLinks()
     } else {
-      alert('Erro ao salvar link')
+      const errorMsg =
+        responseData.error || `Erro ${res.status}: ${res.statusText}`
+      console.error('Erro ao salvar link:', errorMsg, responseData)
+      alert(`Erro ao salvar link: ${errorMsg}`)
     }
   } catch (error) {
-    alert('Erro de conexão')
+    console.error('Erro de conexão:', error)
+    alert(
+      `Erro de conexão: ${
+        error.message || 'Não foi possível conectar ao servidor'
+      }`
+    )
   }
 }
 
@@ -541,11 +558,8 @@ async function deleteLink(id) {
   }
 }
 
-// Expor funções globalmente para onclick
 window.editLink = editLink
 window.deleteLink = deleteLink
-
-// ========== ROTAS ==========
 
 router.addRoute('/', () => {
   if (authService.isAuthenticated()) {
@@ -577,7 +591,6 @@ router.addRoute('/dashboard', () => {
   }
 })
 
-// Inicializar
 document.addEventListener('DOMContentLoaded', () => {
   router.init()
 })

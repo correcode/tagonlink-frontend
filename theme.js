@@ -1,4 +1,3 @@
-// Gerenciamento de tema
 class ThemeManager {
   constructor() {
     this.themeKey = 'tagonlink_theme'
@@ -18,7 +17,6 @@ class ThemeManager {
     localStorage.setItem(this.themeKey, theme)
     document.documentElement.setAttribute('data-theme', theme)
 
-    // Atualizar ícone do botão
     const themeBtn = document.getElementById('themeToggle')
     if (themeBtn) {
       themeBtn.innerHTML =
