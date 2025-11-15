@@ -509,9 +509,25 @@ async function handleSubmitLink(e) {
     } else {
       const errorMsg =
         responseData.error || `Erro ${res.status}: ${res.statusText}`
+      const errorDetails = responseData.details || responseData.message || ''
+      const errorCode = responseData.code || ''
+
       console.error('Erro ao salvar link:', errorMsg, responseData)
       console.error('Status:', res.status)
-      alert(`Erro ao salvar link: ${errorMsg}`)
+      console.error('Código do erro:', errorCode)
+      console.error('Detalhes:', errorDetails)
+
+      let alertMsg = `Erro ao salvar link: ${errorMsg}`
+      if (errorCode === 'TABLE_NOT_FOUND') {
+        alertMsg +=
+          '\n\nAs tabelas não foram criadas no banco de dados. Execute o script schema.sql no Neon.'
+      } else if (errorCode === 'FOREIGN_KEY_VIOLATION') {
+        alertMsg += '\n\nFaça login novamente.'
+      } else if (errorDetails) {
+        alertMsg += `\n\nDetalhes: ${errorDetails}`
+      }
+
+      alert(alertMsg)
     }
   } catch (error) {
     console.error('Erro de conexão ao salvar link:', error)
